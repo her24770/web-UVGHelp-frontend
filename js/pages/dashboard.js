@@ -1,10 +1,8 @@
 import { api } from '../api.js';
 import { requireAuth, initHeader } from '../router.js';
-import { initTheme } from '../ui.js';
 
 requireAuth();
 initHeader();
-initTheme();
 
 // entidades y sus endpoints para obtener el total
 const STATS = [
