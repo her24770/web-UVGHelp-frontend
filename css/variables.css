@@ -45,8 +45,7 @@
 }
 
 /* tema oscuro (default) */
-:root,
-[data-theme="dark"] {
+:root {
   --bg-app:       #0b1220;
   --bg-sidebar:   #0a1020;
   --bg-surface:   #111a2e;
@@ -92,8 +91,8 @@
   --footer-cta-fg: #ffffff;
 }
 
-/* tema claro */
-[data-theme="light"] {
+/* tema claro — especificidad (0,2,0,0) siempre gana sobre :root */
+:root[data-theme="light"] {
   --bg-app:       #f4f6fb;
   --bg-sidebar:   #ffffff;
   --bg-surface:   #ffffff;

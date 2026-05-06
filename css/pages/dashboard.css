@@ -1,0 +1,88 @@
+/* grid de tarjetas de estadísticas */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color var(--t-fast);
+}
+.stat-card:hover { border-color: var(--border-strong); }
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon.blue   { background: var(--badge-info-bg);    color: var(--badge-info-fg); }
+.stat-icon.green  { background: var(--badge-success-bg); color: var(--badge-success-fg); }
+.stat-icon.orange { background: var(--badge-warning-bg); color: var(--badge-warning-fg); }
+.stat-icon.red    { background: var(--badge-danger-bg);  color: var(--badge-danger-fg); }
+
+.stat-info { min-width: 0; }
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* accesos rápidos */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.quick-link {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-decoration: none;
+  transition: all var(--t-fast);
+}
+.quick-link:hover {
+  border-color: var(--accent);
+  background: var(--bg-surface-2);
+}
+.quick-link-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.quick-link-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
