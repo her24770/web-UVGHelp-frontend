@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UVGHelp — Iniciar sesión</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/pages/login.css" />
+</head>
+<body>
+
+<main class="login-page">
+
+  <!-- panel izquierdo: branding -->
+  <section class="login-brand" aria-hidden="true">
+    <div class="login-brand-logo">
+      <div class="login-brand-icon">UV</div>
+      <span class="login-brand-name">UVGHelp</span>
+    </div>
+    <div class="login-brand-content">
+      <h1 class="login-brand-headline">Panel de<br>Administración</h1>
+      <p class="login-brand-sub">
+        Gestioná lugares, eventos, carreras y más desde un solo lugar.
+        Diseñado para los administradores de la Universidad del Valle de Guatemala.
+      </p>
+    </div>
+    <div class="login-brand-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </section>
+
+  <!-- panel derecho: formulario -->
+  <section class="login-form-panel">
+    <div class="login-form-card">
+
+      <div class="login-form-header">
+        <h2 class="login-form-title">Bienvenido de vuelta</h2>
+        <p class="login-form-subtitle">Ingresá con tu cuenta de administrador UVG</p>
+      </div>
+
+      <!-- banner de error general -->
+      <div class="login-error" id="login-error" role="alert" aria-live="polite">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="login-error-msg">Correo o contraseña incorrectos.</span>
+      </div>
+
+      <form class="login-form-body" id="login-form" novalidate>
+
+        <div class="field" id="field-email">
+          <label class="field-label" for="email">
+            Correo electrónico <span class="required">*</span>
+          </label>
+          <div class="field-input-wrap has-icon-left">
+            <span class="field-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input class="field-input" type="email" id="email" name="email"
+              placeholder="admin@uvg.edu.gt" autocomplete="email" required aria-required="true" />
+          </div>
+          <span class="field-error" id="email-error" role="alert" style="display:none">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Ingresá un correo válido
+          </span>
+        </div>
+
+        <div class="field" id="field-password">
+          <label class="field-label" for="password">
+            Contraseña <span class="required">*</span>
+          </label>
+          <div class="field-input-wrap has-icon-left has-icon-right">
+            <span class="field-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </span>
+            <input class="field-input" type="password" id="password" name="password"
+              placeholder="••••••••" autocomplete="current-password" required aria-required="true" />
+            <button type="button" class="field-icon-right" data-password-toggle="password" aria-label="Mostrar contraseña">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="password-error" role="alert" style="display:none">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            La contraseña es requerida
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary login-submit" id="login-btn">
+          Ingresar al panel
+        </button>
+
+      </form>
+
+      <p class="login-footer">
+        Universidad del Valle de Guatemala &mdash; Sistema Interno<br>
+        Solo para personal autorizado
+      </p>
+
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="../js/pages/login.js"></script>
+</body>
+</html>
