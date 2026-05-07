@@ -1,6 +1,5 @@
 import { api } from '../api.js';
 import { requireAuth, initHeader } from '../router.js';
-import { renderTable, renderTableHead } from '../components/table.js';
 import { renderPagination } from '../components/pagination.js';
 import { openModal, closeModal, initModals } from '../components/modal.js';
 import { confirm } from '../components/confirm.js';
@@ -12,8 +11,7 @@ initHeader();
 initModals();
 
 // referencias al DOM
-const tbody       = document.querySelector('#lugares-table tbody');
-const thead       = document.querySelector('#lugares-table thead');
+const cardsGrid   = document.getElementById('lugares-cards');
 const pagination  = document.getElementById('pagination');
 const searchInput = document.getElementById('search');
 const modalTitle  = document.getElementById('modal-title');
@@ -22,53 +20,71 @@ const fileInput   = document.getElementById('f-imagen');
 const imgPreview  = document.getElementById('img-preview');
 
 // estado de la lista
-let state           = { page: 1, limit: 20, q: '', sort: 'nombre', order: 'asc' };
+let state           = { page: 1, limit: 12, q: '', sort: 'nombre', order: 'asc' };
 let editingId       = null;
 let currentImageUrl = null;
 
-// definición de columnas de la tabla
-const COLUMNS = [
-  { key: 'nombre',    label: 'Nombre',    render: r => `<span class="cell-strong">${escapeHtml(r.nombre)}</span>` },
-  { key: 'edificio',  label: 'Edificio',  render: r => escapeHtml(r.edificio ?? '—') },
-  { key: 'piso',      label: 'Piso',      render: r => escapeHtml(r.piso ?? '—') },
-  { key: 'categoria', label: 'Categoría', render: r => escapeHtml(r.categoria ?? '—') },
-  { key: 'imagen_url', label: 'Imagen',   render: r => r.imagen_url
-    ? `<img src="${escapeHtml(r.imagen_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />`
-    : '—' },
-  { key: 'created_at', label: 'Creado',   render: r => formatDate(r.created_at) },
-  { key: '_actions',   label: '',          render: r => `
-    <div class="row-actions">
-      <button class="row-action" data-edit="${r.id}" title="Editar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button>
-      <button class="row-action danger" data-delete="${r.id}" data-name="${escapeHtml(r.nombre)}" title="Eliminar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      </button>
-    </div>` },
-];
+// genera el HTML de una card de lugar
+function cardHtml(r) {
+  const media = r.imagen_url
+    ? `<img src="${escapeHtml(r.imagen_url)}" alt="${escapeHtml(r.nombre)}" />`
+    : `<div class="card-media-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>`;
+  const badge    = r.categoria ? `<span class="card-badge-floating">${escapeHtml(r.categoria)}</span>` : '';
+  const horario  = (r.horario_apertura && r.horario_cierre) ? `${r.horario_apertura} – ${r.horario_cierre}` : null;
+  const ubicacion = [r.edificio, r.piso ? `Piso ${r.piso}` : null].filter(Boolean).join(', ');
 
-// obtiene la lista paginada y re-renderiza la tabla
+  return `
+    <div class="card">
+      <div class="card-media">
+        ${media}
+        ${badge}
+      </div>
+      <div class="card-body">
+        ${ubicacion ? `<div class="card-meta">${escapeHtml(ubicacion)}</div>` : ''}
+        <h3 class="card-title">${escapeHtml(r.nombre)}</h3>
+        ${r.descripcion ? `<p class="card-desc">${escapeHtml(r.descripcion)}</p>` : ''}
+        <div class="card-footer">
+          <span class="card-footer-meta">${horario ? escapeHtml(horario) : formatDate(r.created_at)}</span>
+          <div class="card-actions">
+            <button class="row-action" data-edit="${r.id}" title="Editar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="row-action danger" data-delete="${r.id}" data-name="${escapeHtml(r.nombre)}" title="Eliminar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// obtiene la lista paginada y re-renderiza las cards
 async function load() {
   try {
     const data = await api.get('/lugares', { page: state.page, limit: state.limit, q: state.q, sort: state.sort, order: state.order });
-    renderTableHead(thead, COLUMNS);
-    renderTable(tbody, COLUMNS, data.items);
+    if (data.items.length === 0) {
+      cardsGrid.innerHTML = '<p style="padding:48px;text-align:center;color:var(--text-muted);grid-column:1/-1">No hay lugares registrados.</p>';
+    } else {
+      cardsGrid.innerHTML = data.items.map(cardHtml).join('');
+    }
     renderPagination(pagination, { total: data.total, page: data.page, pageSize: data.limit, onChange: p => { state.page = p; load(); } });
-    bindRowActions();
+    bindCardActions();
   } catch {
     showToast('error', 'Error', 'No se pudo cargar la lista de lugares');
   }
 }
 
-// conecta los botones de editar y eliminar de cada fila
-function bindRowActions() {
-  tbody.querySelectorAll('[data-edit]').forEach(btn => {
+// conecta los botones de editar y eliminar de cada card
+function bindCardActions() {
+  cardsGrid.querySelectorAll('[data-edit]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const data = await api.get(`/lugares/${btn.dataset.edit}`);
       openEdit(data);
     });
   });
-  tbody.querySelectorAll('[data-delete]').forEach(btn => {
+  cardsGrid.querySelectorAll('[data-delete]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const ok = await confirm(`¿Eliminar el lugar "${btn.dataset.name}"?`);
       if (!ok) return;

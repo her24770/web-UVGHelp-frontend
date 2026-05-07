@@ -1,20 +1,18 @@
 import { api } from '../api.js';
 import { requireAuth, initHeader } from '../router.js';
-import { renderTable, renderTableHead } from '../components/table.js';
 import { renderPagination } from '../components/pagination.js';
 import { openModal, closeModal, initModals } from '../components/modal.js';
 import { confirm } from '../components/confirm.js';
 import { showToast } from '../components/toast.js';
-import { escapeHtml, formatDate, formatDateTime, debounce } from '../utils.js';
+import { escapeHtml, formatDateTime, debounce } from '../utils.js';
 
 requireAuth();
 initHeader();
 initModals();
 
 // referencias al DOM
-const tbody       = document.querySelector('#eventos-table tbody');
-const thead       = document.querySelector('#eventos-table thead');
-const pagination  = document.getElementById('pagination');
+const cardsGrid  = document.getElementById('eventos-cards');
+const pagination = document.getElementById('pagination');
 const searchInput = document.getElementById('search');
 const modalTitle  = document.getElementById('modal-title');
 const form        = document.getElementById('evento-form');
@@ -23,34 +21,10 @@ const fileInput   = document.getElementById('f-imagen');
 const imgPreview  = document.getElementById('img-preview');
 
 // estado de la lista
-let state           = { page: 1, limit: 20, q: '', sort: 'titulo', order: 'asc' };
+let state           = { page: 1, limit: 12, q: '', sort: 'titulo', order: 'asc' };
 let editingId       = null;
 let lugares         = [];
 let currentImageUrl = null;
-
-// definición de columnas de la tabla
-const COLUMNS = [
-  { key: 'titulo',       label: 'Título',     render: r => `<span class="cell-strong">${escapeHtml(r.titulo)}</span>` },
-  { key: 'tipo',         label: 'Tipo',        render: r => escapeHtml(r.tipo ?? '—') },
-  { key: 'fecha_inicio', label: 'Fecha inicio', render: r => formatDateTime(r.fecha_inicio) },
-  { key: 'lugar_id',     label: 'Lugar',       render: r => {
-    const l = lugares.find(l => l.id === r.lugar_id);
-    return escapeHtml(l?.nombre ?? '—');
-  }},
-  { key: 'imagen_url',   label: 'Imagen',      render: r => r.imagen_url
-    ? `<img src="${escapeHtml(r.imagen_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />`
-    : '—' },
-  { key: 'created_at',   label: 'Creado',      render: r => formatDate(r.created_at) },
-  { key: '_actions',     label: '',             render: r => `
-    <div class="row-actions">
-      <button class="row-action" data-edit="${r.id}" title="Editar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button>
-      <button class="row-action danger" data-delete="${r.id}" data-name="${escapeHtml(r.titulo)}" title="Eliminar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      </button>
-    </div>` },
-];
 
 // carga los lugares para el select del formulario
 async function loadLugares() {
@@ -60,28 +34,68 @@ async function loadLugares() {
     lugares.map(l => `<option value="${l.id}">${escapeHtml(l.nombre)}</option>`).join('');
 }
 
-// obtiene la lista paginada y re-renderiza la tabla
+// genera el HTML de una card de evento
+function cardHtml(r) {
+  const lugarNombre = lugares.find(l => l.id === r.lugar_id)?.nombre ?? null;
+  const media = r.imagen_url
+    ? `<img src="${escapeHtml(r.imagen_url)}" alt="${escapeHtml(r.titulo)}" />`
+    : `<div class="card-media-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>`;
+  const badge = r.tipo ? `<span class="card-badge-floating">${escapeHtml(r.tipo)}</span>` : '';
+  const meta  = r.fecha_inicio ? formatDateTime(r.fecha_inicio) : '—';
+  const lugar = lugarNombre ? `· ${escapeHtml(lugarNombre)}` : '';
+
+  return `
+    <div class="card">
+      <div class="card-media">
+        ${media}
+        ${badge}
+      </div>
+      <div class="card-body">
+        <div class="card-meta">${meta}</div>
+        <h3 class="card-title">${escapeHtml(r.titulo)}</h3>
+        ${r.descripcion ? `<p class="card-desc">${escapeHtml(r.descripcion)}</p>` : ''}
+        <div class="card-footer">
+          <span class="card-footer-meta">${lugar}</span>
+          <div class="card-actions">
+            <button class="row-action" data-edit="${r.id}" title="Editar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="row-action danger" data-delete="${r.id}" data-name="${escapeHtml(r.titulo)}" title="Eliminar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// obtiene la lista paginada y re-renderiza las cards
 async function load() {
   try {
     const data = await api.get('/eventos', { page: state.page, limit: state.limit, q: state.q, sort: state.sort, order: state.order });
-    renderTableHead(thead, COLUMNS);
-    renderTable(tbody, COLUMNS, data.items);
+    if (data.items.length === 0) {
+      cardsGrid.innerHTML = '<p style="padding:48px;text-align:center;color:var(--text-muted);grid-column:1/-1">No hay eventos registrados.</p>';
+    } else {
+      cardsGrid.innerHTML = data.items.map(cardHtml).join('');
+    }
     renderPagination(pagination, { total: data.total, page: data.page, pageSize: data.limit, onChange: p => { state.page = p; load(); } });
-    bindRowActions();
+    bindCardActions();
   } catch {
     showToast('error', 'Error', 'No se pudo cargar la lista de eventos');
   }
 }
 
-// conecta los botones de editar y eliminar de cada fila
-function bindRowActions() {
-  tbody.querySelectorAll('[data-edit]').forEach(btn => {
+// conecta los botones de editar y eliminar de cada card
+function bindCardActions() {
+  cardsGrid.querySelectorAll('[data-edit]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const data = await api.get(`/eventos/${btn.dataset.edit}`);
       openEdit(data);
     });
   });
-  tbody.querySelectorAll('[data-delete]').forEach(btn => {
+  cardsGrid.querySelectorAll('[data-delete]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const ok = await confirm(`¿Eliminar el evento "${btn.dataset.name}"?`);
       if (!ok) return;
@@ -107,7 +121,7 @@ function updatePreview(url) {
   }
 }
 
-// convierte ISO string a formato datetime-local (YYYY-MM-DDTHH:MM) para el input
+// convierte ISO string a formato datetime-local para el input
 function toDatetimeLocal(iso) {
   if (!iso) return '';
   return iso.slice(0, 16);
@@ -127,13 +141,13 @@ function openCreate() {
 function openEdit(item) {
   editingId = item.id;
   currentImageUrl = item.imagen_url ?? null;
-  modalTitle.textContent      = 'Editar Evento';
-  form.titulo.value           = item.titulo ?? '';
-  form.descripcion.value      = item.descripcion ?? '';
-  form.tipo.value             = item.tipo ?? '';
-  form.fecha_inicio.value     = toDatetimeLocal(item.fecha_inicio);
-  form.fecha_fin.value        = toDatetimeLocal(item.fecha_fin);
-  selectLugar.value           = item.lugar_id ?? '';
+  modalTitle.textContent  = 'Editar Evento';
+  form.titulo.value       = item.titulo ?? '';
+  form.descripcion.value  = item.descripcion ?? '';
+  form.tipo.value         = item.tipo ?? '';
+  form.fecha_inicio.value = toDatetimeLocal(item.fecha_inicio);
+  form.fecha_fin.value    = toDatetimeLocal(item.fecha_fin);
+  selectLugar.value       = item.lugar_id ?? '';
   updatePreview(item.imagen_url ?? null);
   openModal('evento-modal');
 }
