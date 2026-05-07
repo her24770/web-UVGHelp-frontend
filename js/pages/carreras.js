@@ -5,8 +5,8 @@ import { renderPagination } from '../components/pagination.js';
 import { openModal, closeModal, initModals } from '../components/modal.js';
 import { confirm } from '../components/confirm.js';
 import { showToast } from '../components/toast.js';
-import { escapeHtml, formatDate, debounce } from '../utils.js';
-import { downloadCsv, downloadXlsx } from '../components/export.js';
+import { escapeHtml, formatDate, debounce, getQueryParams, setQueryParams } from '../utils.js';
+import { downloadCsv, downloadXlsx, fetchAll } from '../components/export.js';
 
 requireAuth();
 initHeader();
@@ -20,8 +20,10 @@ const searchInput = document.getElementById('search');
 const modalTitle  = document.getElementById('modal-title');
 const form        = document.getElementById('carrera-form');
 
-// estado de la lista
-let state = { page: 1, limit: 20, q: '', sort: 'nombre', order: 'asc' };
+// estado de la lista — inicializado desde la URL si hay parámetros
+const _qp = getQueryParams();
+let state = { page: Number(_qp.page) || 1, limit: 20, q: _qp.q || '', sort: _qp.sort || 'nombre', order: _qp.order || 'asc' };
+if (state.q) searchInput.value = state.q;
 let editingId = null;
 
 // definición de columnas de la tabla
@@ -44,6 +46,7 @@ const COLUMNS = [
 
 // obtiene la lista paginada y re-renderiza la tabla
 async function load() {
+  setQueryParams({ page: state.page, q: state.q || null, sort: state.sort, order: state.order });
   try {
     const data = await api.get('/carreras', { page: state.page, limit: state.limit, q: state.q, sort: state.sort, order: state.order });
     renderTableHead(thead, COLUMNS);
@@ -130,9 +133,9 @@ const EXPORT_COLS = [
 
 async function exportData(format) {
   try {
-    const data = await api.get('/carreras', { limit: 1000, sort: state.sort, order: state.order, q: state.q });
+    const items = await fetchAll(api.get, '/carreras', { sort: state.sort, order: state.order, q: state.q });
     const fn = format === 'csv' ? downloadCsv : downloadXlsx;
-    fn(`carreras.${format === 'csv' ? 'csv' : 'xls'}`, data.items, EXPORT_COLS);
+    fn(`carreras.${format === 'csv' ? 'csv' : 'xls'}`, items, EXPORT_COLS);
   } catch {
     showToast('error', 'Error', 'No se pudo exportar');
   }

@@ -4,8 +4,8 @@ import { renderPagination } from '../components/pagination.js';
 import { openModal, closeModal, initModals } from '../components/modal.js';
 import { confirm } from '../components/confirm.js';
 import { showToast } from '../components/toast.js';
-import { escapeHtml, formatDate, debounce } from '../utils.js';
-import { downloadCsv, downloadXlsx } from '../components/export.js';
+import { escapeHtml, formatDate, debounce, getQueryParams, setQueryParams } from '../utils.js';
+import { downloadCsv, downloadXlsx, fetchAll } from '../components/export.js';
 
 requireAuth();
 initHeader();
@@ -20,8 +20,10 @@ const form        = document.getElementById('lugar-form');
 const fileInput   = document.getElementById('f-imagen');
 const imgPreview  = document.getElementById('img-preview');
 
-// estado de la lista
-let state           = { page: 1, limit: 12, q: '', sort: 'nombre', order: 'asc' };
+// estado de la lista — inicializado desde la URL si hay parámetros
+const _qp = getQueryParams();
+let state           = { page: Number(_qp.page) || 1, limit: 12, q: _qp.q || '', sort: _qp.sort || 'nombre', order: _qp.order || 'asc' };
+if (state.q) searchInput.value = state.q;
 let editingId       = null;
 let currentImageUrl = null;
 
@@ -63,6 +65,7 @@ function cardHtml(r) {
 
 // obtiene la lista paginada y re-renderiza las cards
 async function load() {
+  setQueryParams({ page: state.page, q: state.q || null, sort: state.sort, order: state.order });
   try {
     const data = await api.get('/lugares', { page: state.page, limit: state.limit, q: state.q, sort: state.sort, order: state.order });
     if (data.items.length === 0) {
@@ -193,9 +196,9 @@ const EXPORT_COLS = [
 
 async function exportData(format) {
   try {
-    const data = await api.get('/lugares', { limit: 1000, sort: state.sort, order: state.order, q: state.q });
+    const items = await fetchAll(api.get, '/lugares', { sort: state.sort, order: state.order, q: state.q });
     const fn = format === 'csv' ? downloadCsv : downloadXlsx;
-    fn(`lugares.${format === 'csv' ? 'csv' : 'xls'}`, data.items, EXPORT_COLS);
+    fn(`lugares.${format === 'csv' ? 'csv' : 'xls'}`, items, EXPORT_COLS);
   } catch {
     showToast('error', 'Error', 'No se pudo exportar');
   }

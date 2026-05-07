@@ -1,6 +1,19 @@
 // columns: [{ key, label, value? }]
 // value(row) es opcional; si no está, se usa row[key]
 
+// recupera todos los registros de un endpoint paginado (max backend = 100 por página)
+// apiGet: función api.get del módulo importador
+export async function fetchAll(apiGet, endpoint, params = {}) {
+  const first = await apiGet(endpoint, { ...params, page: 1, limit: 100 });
+  let items = [...first.items];
+  const totalPages = Math.ceil(first.total / 100);
+  for (let p = 2; p <= totalPages; p++) {
+    const data = await apiGet(endpoint, { ...params, page: p, limit: 100 });
+    items = items.concat(data.items);
+  }
+  return items;
+}
+
 function escXml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
