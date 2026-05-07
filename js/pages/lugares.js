@@ -5,6 +5,7 @@ import { openModal, closeModal, initModals } from '../components/modal.js';
 import { confirm } from '../components/confirm.js';
 import { showToast } from '../components/toast.js';
 import { escapeHtml, formatDate, debounce } from '../utils.js';
+import { downloadCsv, downloadXlsx } from '../components/export.js';
 
 requireAuth();
 initHeader();
@@ -180,8 +181,30 @@ fileInput.addEventListener('change', () => {
   if (file) { imgPreview.textContent = file.name; imgPreview.style.display = 'block'; }
 });
 
+const EXPORT_COLS = [
+  { key: 'nombre',           label: 'Nombre' },
+  { key: 'descripcion',      label: 'Descripción' },
+  { key: 'edificio',         label: 'Edificio' },
+  { key: 'piso',             label: 'Piso' },
+  { key: 'categoria',        label: 'Categoría' },
+  { key: 'horario_apertura', label: 'Apertura' },
+  { key: 'horario_cierre',   label: 'Cierre' },
+];
+
+async function exportData(format) {
+  try {
+    const data = await api.get('/lugares', { limit: 1000, sort: state.sort, order: state.order, q: state.q });
+    const fn = format === 'csv' ? downloadCsv : downloadXlsx;
+    fn(`lugares.${format === 'csv' ? 'csv' : 'xls'}`, data.items, EXPORT_COLS);
+  } catch {
+    showToast('error', 'Error', 'No se pudo exportar');
+  }
+}
+
 // eventos de la página
 document.getElementById('btn-nuevo').addEventListener('click', openCreate);
+document.getElementById('btn-csv').addEventListener('click', () => exportData('csv'));
+document.getElementById('btn-xlsx').addEventListener('click', () => exportData('xlsx'));
 form.addEventListener('submit', handleSave);
 searchInput.addEventListener('input', debounce(v => { state.q = v.target.value; state.page = 1; load(); }, 300));
 
