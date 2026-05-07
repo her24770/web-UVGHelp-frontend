@@ -99,13 +99,13 @@ function bindCardActions() {
   });
 }
 
-// muestra u oculta la vista previa de la imagen
+// muestra el nombre del archivo de imagen actual o lo oculta
 function updatePreview(url) {
   if (url) {
-    imgPreview.src = url;
+    imgPreview.textContent = url.split('/').pop();
     imgPreview.style.display = 'block';
   } else {
-    imgPreview.src = '';
+    imgPreview.textContent = '';
     imgPreview.style.display = 'none';
   }
 }
@@ -174,10 +174,10 @@ async function handleSave(e) {
   }
 }
 
-// actualiza la vista previa cuando el usuario selecciona un archivo
+// muestra el nombre del archivo seleccionado
 fileInput.addEventListener('change', () => {
   const file = fileInput.files[0];
-  if (file) updatePreview(URL.createObjectURL(file));
+  if (file) { imgPreview.textContent = file.name; imgPreview.style.display = 'block'; }
 });
 
 // eventos de la página
