@@ -10,6 +10,7 @@ Panel de administración para el sistema UVGHelp. Construido con HTML + CSS + Ja
 ## Correr con Docker
 
 ```bash
+cp .env.example .env   # ajusta las variables si es necesario
 docker-compose up --build
 ```
 
@@ -31,14 +32,14 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ## Configuración
 
-Toda la configuración del proyecto está centralizada en `js/config.js`:
+Las variables de entorno se definen en `.env` (copiá desde `.env.example`):
 
-```js
-export const API_BASE  = 'http://localhost:8000/api'; // URL del backend
-export const TOKEN_KEY = 'uvg_token';                  // clave del JWT en localStorage
+```bash
+API_BASE=http://localhost:8000/api   # URL del backend
+TOKEN_KEY=uvg_token                  # clave del JWT en localStorage
 ```
 
-Para apuntar al backend en producción solo cambiá `API_BASE` en ese archivo.
+Al levantar el contenedor Docker, el entrypoint genera automáticamente `js/config.js` con esos valores. Para producción solo cambiá `API_BASE` en el `.env` del servidor.
 
 ## Estructura del proyecto
 
