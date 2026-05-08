@@ -183,6 +183,14 @@ img, svg { display: block; }
 .th-sortable { cursor: pointer; user-select: none; }
 .th-sortable:hover { color: var(--text-secondary); }
 .th-active { color: var(--accent) !important; }
+.th-sort-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; margin-left: 4px;
+  border-radius: 3px; font-size: 10px; vertical-align: middle;
+  background: var(--surface-2, rgba(128,128,128,0.15));
+  color: var(--text-faint);
+}
+.th-active .th-sort-icon { background: var(--accent); color: #fff; }
 
 /* acciones por fila (editar / eliminar) */
 .row-actions { display: flex; gap: 4px; justify-content: flex-end; }

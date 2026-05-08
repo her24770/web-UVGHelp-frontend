@@ -30,9 +30,11 @@ export function renderTableHead(thead, columns, sortState, onSort) {
       ${columns.map(col => {
         const sortable = !!onSort && col.sortable !== false && !col.key.startsWith('_');
         const isActive = sortable && sortState && sortState.sort === col.key;
-        const arrow    = isActive ? (sortState.order === 'asc' ? ' ↑' : ' ↓') : '';
+        const icon     = sortable
+          ? `<span class="th-sort-icon">${isActive ? (sortState.order === 'asc' ? '↑' : '↓') : '↕'}</span>`
+          : '';
         const attrs    = sortable ? `data-sort="${col.key}"` : '';
-        return `<th ${attrs} class="${sortable ? 'th-sortable' : ''}${isActive ? ' th-active' : ''}">${col.label}${arrow}</th>`;
+        return `<th ${attrs} class="${sortable ? 'th-sortable' : ''}${isActive ? ' th-active' : ''}">${col.label}${icon}</th>`;
       }).join('')}
     </tr>`;
 
