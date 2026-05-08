@@ -1,7 +1,8 @@
-const API_BASE = 'http://localhost:8000/api';
+import { API_BASE, TOKEN_KEY } from './config.js';
 
+//funcion para hacer peticiones a la API, maneja el token de autenticacion y errores comunes
 async function request(path, options = {}) {
-  const token = localStorage.getItem('uvg_token');
+  const token = localStorage.getItem(TOKEN_KEY);
 
   const headers = {
     'Content-Type': 'application/json',
@@ -12,7 +13,7 @@ async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
   if (res.status === 401) {
-    localStorage.removeItem('uvg_token');
+    localStorage.removeItem(TOKEN_KEY);
     window.location.replace('/pages/login.html');
     return;
   }
@@ -28,6 +29,7 @@ async function request(path, options = {}) {
   return data;
 }
 
+// Construye una URL con query params, omitiendo los que son vacíos o nulos
 function buildUrl(path, params = {}) {
   const filtered = Object.fromEntries(
     Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined)
@@ -36,6 +38,7 @@ function buildUrl(path, params = {}) {
   return query ? `${path}?${query}` : path;
 }
 
+// API wrapper para facilitar las peticiones a la API desde el frontend
 export const api = {
   get(path, params = {}) {
     return request(buildUrl(path, params));
@@ -53,9 +56,9 @@ export const api = {
     return request(path, { method: 'DELETE' });
   },
 
-  /* Para subir archivos (imagen, PDF) — deja que el browser ponga el Content-Type con boundary */
+  // Para subir archivos (imagen), el browser ponga el Content-Type 
   postForm(path, formData) {
-    const token = localStorage.getItem('uvg_token');
+    const token = localStorage.getItem(TOKEN_KEY);
     return fetch(`${API_BASE}${path}`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},

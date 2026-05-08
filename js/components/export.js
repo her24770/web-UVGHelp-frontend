@@ -1,5 +1,3 @@
-// columns: [{ key, label, value? }]
-// value(row) es opcional; si no está, se usa row[key]
 
 // recupera todos los registros de un endpoint paginado (max backend = 100 por página)
 // apiGet: función api.get del módulo importador
