@@ -31,7 +31,7 @@ const COLUMNS = [
   { key: 'nombre',             label: 'Nombre',   render: r => `<span class="cell-strong">${escapeHtml(r.nombre)}</span>` },
   { key: 'facultad',           label: 'Facultad', render: r => escapeHtml(r.facultad ?? '—') },
   { key: 'duracion_semestres', label: 'Duración', render: r => r.duracion_semestres ? `${r.duracion_semestres} sem.` : '—' },
-  { key: 'pensum_url',         label: 'Pensum',   render: r => r.pensum_url ? `<a href="${escapeHtml(r.pensum_url)}" target="_blank" style="color:var(--accent)">Ver PDF</a>` : '—' },
+  { key: 'pensum_url',         label: 'Pensum',   sortable: false, render: r => r.pensum_url ? `<a href="${escapeHtml(r.pensum_url)}" target="_blank" style="color:var(--accent)">Ver PDF</a>` : '—' },
   { key: 'created_at',         label: 'Creado',   render: r => formatDate(r.created_at) },
   { key: '_actions',           label: '',         render: r => `
     <div class="row-actions">
@@ -49,7 +49,11 @@ async function load() {
   setQueryParams({ page: state.page, q: state.q || null, sort: state.sort, order: state.order });
   try {
     const data = await api.get('/carreras', { page: state.page, limit: state.limit, q: state.q, sort: state.sort, order: state.order });
-    renderTableHead(thead, COLUMNS);
+    renderTableHead(thead, COLUMNS, state, col => {
+      if (state.sort === col) state.order = state.order === 'asc' ? 'desc' : 'asc';
+      else { state.sort = col; state.order = 'asc'; }
+      state.page = 1; load();
+    });
     renderTable(tbody, COLUMNS, data.items);
     renderPagination(pagination, { total: data.total, page: data.page, pageSize: data.limit, onChange: p => { state.page = p; load(); } });
     bindRowActions();

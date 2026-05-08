@@ -22,9 +22,23 @@ export function renderTable(tbody, columns, rows) {
 }
 
 // construye el thead de la tabla dado un array de columnas
-export function renderTableHead(thead, columns) {
+// sortState: { sort, order } — columna activa y dirección
+// onSort(colKey): callback invocado al hacer click en un header sortable
+export function renderTableHead(thead, columns, sortState, onSort) {
   thead.innerHTML = `
     <tr>
-      ${columns.map(col => `<th>${col.label}</th>`).join('')}
+      ${columns.map(col => {
+        const sortable = !!onSort && col.sortable !== false && !col.key.startsWith('_');
+        const isActive = sortable && sortState && sortState.sort === col.key;
+        const arrow    = isActive ? (sortState.order === 'asc' ? ' ↑' : ' ↓') : '';
+        const attrs    = sortable ? `data-sort="${col.key}"` : '';
+        return `<th ${attrs} class="${sortable ? 'th-sortable' : ''}${isActive ? ' th-active' : ''}">${col.label}${arrow}</th>`;
+      }).join('')}
     </tr>`;
+
+  if (onSort) {
+    thead.querySelectorAll('[data-sort]').forEach(th => {
+      th.addEventListener('click', () => onSort(th.dataset.sort));
+    });
+  }
 }

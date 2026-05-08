@@ -1,5 +1,11 @@
 # UVGHelp Admin
 
+## Repositorios
+
+- Frontend: https://github.com/her24770/web-UVGHelp-frontend
+- Backend: https://github.com/her24770/web-UVGHelp-backend
+- Sitio publicado: https://uvg.jhgo.online/web/UVHelp
+
 Panel de administración para el sistema UVGHelp. Construido con HTML + CSS + JavaScript Vanilla (sin frameworks, sin librerías externas).
 
 ## Requisitos
@@ -10,7 +16,8 @@ Panel de administración para el sistema UVGHelp. Construido con HTML + CSS + Ja
 ## Correr con Docker
 
 ```bash
-cp .env.example .env   # ajusta las variables si es necesario
+cp .env.example .env
+cp docker-compose.example.yml docker-compose.yml
 docker-compose up --build
 ```
 

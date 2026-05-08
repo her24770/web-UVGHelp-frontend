@@ -49,7 +49,11 @@ async function load() {
   setQueryParams({ page: state.page, q: state.q || null, sort: state.sort, order: state.order });
   try {
     const data = await api.get('/pagos', { page: state.page, limit: state.limit, q: state.q, sort: state.sort, order: state.order });
-    renderTableHead(thead, COLUMNS);
+    renderTableHead(thead, COLUMNS, state, col => {
+      if (state.sort === col) state.order = state.order === 'asc' ? 'desc' : 'asc';
+      else { state.sort = col; state.order = 'asc'; }
+      state.page = 1; load();
+    });
     renderTable(tbody, COLUMNS, data.items);
     renderPagination(pagination, { total: data.total, page: data.page, pageSize: data.limit, onChange: p => { state.page = p; load(); } });
     bindRowActions();

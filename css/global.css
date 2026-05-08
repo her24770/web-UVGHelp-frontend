@@ -180,6 +180,9 @@ img, svg { display: block; }
 .table tbody tr { transition: background var(--t-fast); }
 .table tbody tr:hover { background: var(--row-hover); }
 .cell-strong { color: var(--text-primary); font-weight: 600; }
+.th-sortable { cursor: pointer; user-select: none; }
+.th-sortable:hover { color: var(--text-secondary); }
+.th-active { color: var(--accent) !important; }
 
 /* acciones por fila (editar / eliminar) */
 .row-actions { display: flex; gap: 4px; justify-content: flex-end; }

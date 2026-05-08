@@ -15,6 +15,8 @@ initModals();
 const cardsGrid   = document.getElementById('lugares-cards');
 const pagination  = document.getElementById('pagination');
 const searchInput = document.getElementById('search');
+const sortSelect  = document.getElementById('sort-select');
+const btnOrder    = document.getElementById('btn-order');
 const modalTitle  = document.getElementById('modal-title');
 const form        = document.getElementById('lugar-form');
 const fileInput   = document.getElementById('f-imagen');
@@ -24,6 +26,8 @@ const imgPreview  = document.getElementById('img-preview');
 const _qp = getQueryParams();
 let state           = { page: Number(_qp.page) || 1, limit: 12, q: _qp.q || '', sort: _qp.sort || 'nombre', order: _qp.order || 'asc' };
 if (state.q) searchInput.value = state.q;
+sortSelect.value = state.sort;
+btnOrder.textContent = state.order === 'asc' ? '↑ Asc' : '↓ Desc';
 let editingId       = null;
 let currentImageUrl = null;
 
@@ -210,5 +214,11 @@ document.getElementById('btn-csv').addEventListener('click', () => exportData('c
 document.getElementById('btn-xlsx').addEventListener('click', () => exportData('xlsx'));
 form.addEventListener('submit', handleSave);
 searchInput.addEventListener('input', debounce(v => { state.q = v.target.value; state.page = 1; load(); }, 300));
+sortSelect.addEventListener('change', () => { state.sort = sortSelect.value; state.page = 1; load(); });
+btnOrder.addEventListener('click', () => {
+  state.order = state.order === 'asc' ? 'desc' : 'asc';
+  btnOrder.textContent = state.order === 'asc' ? '↑ Asc' : '↓ Desc';
+  state.page = 1; load();
+});
 
 load();
