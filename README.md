@@ -13,11 +13,25 @@ Panel de administración para el sistema UVGHelp. Construido con HTML + CSS + Ja
 - Docker y Docker Compose (recomendado)
 - O cualquier servidor HTTP estático (Live Server, nginx, Python http.server)
 
+## Credenciales de prueba
+
+| Campo    | Valor              |
+|----------|--------------------|
+| Correo   | admin@uvg.edu.gt   |
+| Contraseña | admin123         |
+
 ## Correr con Docker
 
 ```bash
+# 1. Clonar el repositorio
+git clone https://github.com/her24770/web-UVGHelp-frontend.git
+cd web-UVGHelp-frontend
+
+# 2. Copiar variables de entorno y compose
 cp .env.example .env
 cp docker-compose.example.yml docker-compose.yml
+
+# 3. Levantar
 docker-compose up --build
 ```
 
@@ -68,20 +82,29 @@ Al levantar el contenedor Docker, el entrypoint genera automáticamente `js/conf
     └── pages/               # Estilos por página
 ```
 
-## Challenges implementados
+## Challenges en front-end implementados
 
-- Exportar lista a CSV (generado manualmente en JS, sin librerías)
-- Exportar lista a Excel .xlsx (formato SpreadsheetML, sin librerías)
-- Búsqueda en tiempo real con debounce
-- Paginación y ordenamiento con estado en URL
-- Upload de imágenes
+- **Exportar a CSV** — generado manualmente en JavaScript sin librerías; incluye BOM UTF-8 para compatibilidad con Excel; descarga directamente desde el navegador
+- **Exportar a Excel (.xlsx)** — generado manualmente con formato SpreadsheetML sin librerías de ningún tipo; abre correctamente en Excel y LibreOffice
+- **Upload de imágenes** — selección de archivo con vista previa del nombre, envío al backend con validación de tipo y tamaño (máx 1MB)
+- **Búsqueda en tiempo real** — con debounce de 300ms para no saturar la API
+- **Paginación** — con estado sincronizado en URL (`?page=`)
+- **Ordenamiento interactivo** — headers de tabla clickeables con indicador ↑↓ en páginas de tabla; selector de campo y botón asc/desc en páginas de cards
+- **Estado en URL** — búsqueda, página, campo de orden y dirección se persisten en los query params con `history.replaceState`; cualquier vista es compartible directamente desde la barra del navegador
+
+## Screenshots
+
+![Login](doc/login.png)
+![Tabla](doc/tabla.png)
+![Cards](doc/cards.png)
+![Formulario](doc/formulario.png)
 
 ## Reflexión
 
-La mayor parte de las funciones que normalmente se construyen con una librería — paginación, modales, toasts, tablas — se implementaron manualmente. Esto hace el proceso más tedioso, pero genera una comprensión mucho más profunda de cómo funcionan esas abstracciones por dentro: el ciclo de renderizado, la carga de datos, las llamadas a la API y el manejo de estado.
+La mayor parte de las funciones que normalmente se construyen con una librería como paginación, modales, toasts, tablas se implementaron manualmente. Esto hace el proceso más tedioso, pero genera una comprensión mucho más profunda de cómo funcionan esas abstracciones por dentro: el ciclo de renderizado, la carga de datos, las llamadas a la API y el manejo de estado.
 
 Una de las soluciones más interesantes fue la sincronización del estado con la URL. En lugar de perder los filtros o la página actual al recargar, se usó `history.replaceState` para escribir el estado en los query params de la URL. Esto permite que cualquier búsqueda o filtro sea "compartible" directamente desde la barra del navegador, replicando lo que librerías como React Query o el router de Vue hacen automáticamente.
 
-El área que personalmente resultó más tediosa fue el CSS y el diseño visual — no es la parte del desarrollo que más disfruto, pero fue necesaria para que la aplicación se vea como una herramienta real y no como una tarea universitaria.
+El área que personalmente resultó más tediosa fue el CSS y el diseño visual, no es la parte del desarrollo que más disfruto, pero fue necesaria para que la aplicación se vea como una herramienta real y no como una tarea universitaria.
 
-En cuanto a si volvería a usar Vanilla JS: para producción con un equipo, no — el proceso es considerablemente más largo y el mantenimiento de componentes hechos a mano escala mal. Pero como método de aprendizaje es muy efectivo: primero entendés la sintaxis y los algoritmos del lenguaje, y luego entendés por qué existen los frameworks y qué problema resuelven exactamente.
+En cuanto a si volvería a usar Vanilla JS: para producción con un equipo, el proceso es considerablemente más largo y el mantenimiento de componentes hechos a mano escala mal. Pero como método de aprendizaje es muy efectivo: primero entendés la sintaxis y los algoritmos del lenguaje, y luego entendés por qué existen los frameworks y qué problema resuelven exactamente.
